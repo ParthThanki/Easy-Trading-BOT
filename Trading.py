@@ -35,3 +35,35 @@ plt.plot(Sp_Data[Sp_Data['position'] == -1].index, Sp_Data['short_mavg'][Sp_Data
 plt.title("S&P 500 - Moving Average Crossover")
 plt.legend()
 plt.show()
+
+# Simulate Trades Testing
+initial_capital = float(10000.0)  # Starting capital
+positions = pd.DataFrame(index=Sp_Data.index).fillna(0.0)
+
+# Buy a 100 shares
+positions['S&P500'] = 100 * Sp_Data['signal']
+
+# Initialize the portfolio with value owned
+portfolio = positions.multiply(Sp_Data['Close'], axis=0)
+
+# Store the difference in shares owned
+pos_diff = positions.diff()
+
+# Add `holdings` to portfolio
+portfolio['holdings'] = (positions.multiply(Sp_Data['Close'], axis=0)).sum(axis=1)
+
+# Add `cash` to portfolio
+portfolio['cash'] = initial_capital - (pos_diff.multiply(Sp_Data['Close'], axis=0)).sum(axis=1).cumsum()
+
+# Add `total` to portfolio
+portfolio['total'] = portfolio['cash'] + portfolio['holdings']
+
+# Add `returns` to portfolio
+portfolio['returns'] = portfolio['total'].pct_change()
+
+# Plot the equity curve
+plt.figure(figsize=(10,5))
+plt.plot(portfolio['total'], label='Portfolio value')
+plt.title('Equity Curve')
+plt.legend()
+plt.show()
